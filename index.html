@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="SphereScene: Spherical-to-3D Consistency for Panorama-based 3D Scene Generation">
+  <meta name="keywords" content="360 panorama generation, 3D scene generation, spherical consistency, Gaussian Splatting">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>SphereScene: Spherical-to-3D Consistency for Panorama-based 3D Scene Generation</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      font-family: 'Noto Sans', 'Google Sans', Arial, sans-serif;
+      color: #111;
+      background: #fff;
+    }
+
+    .publication-title {
+      font-family: 'Google Sans', 'Noto Sans', sans-serif;
+      line-height: 1.18;
+    }
+
+    .hero-body {
+      padding-top: 3.25rem;
+      padding-bottom: 2.25rem;
+    }
+
+    .publication-authors {
+      color: #333;
+    }
+
+    .button.is-dark {
+      background-color: #222;
+    }
+
+    .section {
+      padding-top: 2.2rem;
+      padding-bottom: 2.2rem;
+    }
+
+    .section-note,
+    .figure-caption,
+    .content p {
+      color: #111;
+      font-size: 1.0rem;
+      line-height: 1.72;
+    }
+
+    .section-note {
+      margin-top: 0.75rem;
+    }
+
+    .figure-caption {
+      margin-top: 0.65rem;
+      text-align: left;
+    }
+
+    .full-figure {
+      margin-top: 0.8rem;
+    }
+
+    .full-figure img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #e8e8e8;
+      background: #fff;
+      display: block;
+    }
+
+    .result-block {
+      margin-top: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .compact-section {
+      padding-top: 1.4rem;
+      padding-bottom: 1.4rem;
+    }
+
+    .subfigure-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.1rem;
+      align-items: start;
+    }
+
+    @media screen and (max-width: 768px) {
+      .subfigure-grid { grid-template-columns: 1fr; }
+    }
+
+    .subfigure-card img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #e8e8e8;
+      display: block;
+      background: #fff;
+    }
+
+    .subfigure-card .caption {
+      margin-top: 0.45rem;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: #111;
+    }
+
+    .pano-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    @media screen and (max-width: 768px) {
+      .pano-grid { grid-template-columns: 1fr; }
+    }
+
+    .pano-card {
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      background: #fff;
+      padding: 0.75rem;
+    }
+
+    .pano-window {
+      width: 100%;
+      height: 190px;
+      border-radius: 6px;
+      border: 1px solid #eeeeee;
+      background-repeat: repeat-x;
+      background-position: 0 center;
+      background-size: auto 100%;
+      cursor: grab;
+      overflow: hidden;
+      user-select: none;
+      touch-action: pan-y;
+    }
+
+    .pano-window.is-dragging {
+      cursor: grabbing;
+    }
+
+    .pano-card p {
+      margin-top: 0.55rem;
+      margin-bottom: 0.1rem;
+      font-size: 0.95rem;
+      color: #111;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+
+
+    .metrics-table {
+      margin-top: 1.1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .black-table th,
+    .black-table td {
+      color: #111 !important;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    .black-table th:first-child,
+    .black-table td:first-child {
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .table-caption {
+      margin-top: 0.45rem;
+      margin-bottom: 0.8rem;
+      color: #111;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      text-align: left;
+    }
+
+    .footer-note {
+      font-size: 0.95rem;
+      color: #111;
+      line-height: 1.65;
+    }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+      <h1 class="title is-1 publication-title">SphereScene</h1>
+      <h2 class="title is-3 publication-title">
+        Spherical-to-3D Consistency for Panorama-based 3D Scene Generation
+      </h2>
+
+      <div class="is-size-5 publication-authors" style="margin-top: 0.75rem;">
+        <span class="author-block">Anonymous Submission</span>
+      </div>
+
+      <div class="publication-links" style="margin-top: 1rem;">
+        <span class="link-block">
+          <a href="https://anonymous.4open.science/r/SphereScene/" class="external-link button is-normal is-rounded is-dark" target="_blank" rel="noopener noreferrer">
+            <span class="icon"><i class="fas fa-code"></i></span>
+            <span>Code</span>
+          </a>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser compact-section">
+  <div class="container is-max-desktop">
+    <figure class="image is-centered full-figure">
+      <img src="./media/figure1.png" alt="SphereScene teaser">
+    </figure>
+    <p class="figure-caption">
+      <strong>Overview.</strong> SphereScene generates coherent 360&deg; panoramas and lifts them into stable 3D scenes by explicitly modeling spherical consistency across panorama synthesis, depth estimation, and Gaussian-based scene construction.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            360&deg; panoramas provide a compact spherical representation for text-driven 3D scene generation. However, objectives defined on the planar ERP grid are inconsistent with spherical geometry, leading to seam artifacts, polar distortions, unreliable depth, and unstable 3D lifting. SphereScene formulates panorama-based 3D scene generation under spherical-to-3D consistency. It uses a metric-corrected diffusion objective, yaw-shifted uncertainty-aware radial depth aggregation, and a layer-guided, solid-angle-aware 3D Gaussian construction strategy. Experiments show that the proposed formulation produces more coherent panoramas and more stable 3D scenes than representative baselines.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Approach</h2>
+    <figure class="image is-centered full-figure">
+      <img src="./media/figure2.png" alt="Method overview">
+    </figure>
+    <p class="figure-caption">
+      <strong>Method overview.</strong> The upper part adapts panorama generation to the spherical domain through metric-aware regularization, while the lower part constructs a stable 3D scene using uncertainty-aware radial depth and solid-angle-aware Gaussian initialization.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">360&deg; Panorama Generation</h2>
+    <div class="section-note has-text-justified">
+      <p>
+        We compare SphereScene with representative text-to-panorama generation methods. The highlighted regions indicate common failures in the spherical domain, including pole-region distortion and seam mismatch across the wrap-around boundary.
+      </p>
+    </div>
+
+    <figure class="image is-centered full-figure result-block">
+      <img src="./media/figure3.png" alt="Main panorama comparison">
+    </figure>
+    <p class="figure-caption">
+      <strong>Main panorama comparison.</strong> SphereScene better preserves pole structures and seam continuity, producing panoramas that are more coherent as spherical observations.
+    </p>
+
+    <div class="metrics-table table-container">
+      <table class="table is-fullwidth is-striped is-hoverable is-bordered is-narrow black-table">
+        <thead>
+          <tr>
+            <th rowspan="2">Method</th>
+            <th rowspan="2">FID ↓</th>
+            <th rowspan="2">Aesthetic ↑</th>
+            <th rowspan="2">CLIP-Score ↑</th>
+            <th colspan="2">CLIP-IQA ↑</th>
+          </tr>
+          <tr>
+            <th>Quality</th>
+            <th>Sharpness</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>PanFusion</td><td>56.86</td><td>4.42</td><td>26.09</td><td>0.64</td><td>0.25</td></tr>
+          <tr><td>DiffPano</td><td>60.72</td><td><u>4.48</u></td><td>30.94</td><td><u>0.74</u></td><td><u>0.27</u></td></tr>
+          <tr><td>SMGD</td><td><u>49.12</u></td><td>4.25</td><td><u>31.34</u></td><td>0.73</td><td><strong>0.31</strong></td></tr>
+          <tr><td><strong>SphereScene (Ours)</strong></td><td><strong>44.50</strong></td><td><strong>4.73</strong></td><td><strong>33.51</strong></td><td><strong>0.80</strong></td><td><strong>0.31</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">
+      <strong>Quantitative panorama generation results.</strong> SphereScene achieves the best overall performance in distribution quality, perceptual quality, and text alignment. <strong>Bold</strong> indicates the best result, and <u>underline</u> indicates the second-best result.
+    </p>
+
+    <div class="subfigure-grid result-block">
+      <div class="subfigure-card">
+        <img src="./media/figure5.png" alt="Outdoor panorama comparisons">
+        <p class="caption"><strong>Outdoor panorama comparisons.</strong> Additional outdoor results comparing Ours, PanFusion, DiffPano, and SMGD.</p>
+      </div>
+      <div class="subfigure-card">
+        <img src="./media/figure6.png" alt="Indoor panorama comparisons">
+        <p class="caption"><strong>Indoor panorama comparisons.</strong> Additional indoor results with more diverse scene layouts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Panorama-based 3D Scene Generation</h2>
+    <div class="section-note has-text-justified">
+      <p>
+        We further evaluate whether generated panoramas can be lifted into stable 3D scenes. The results include generated panoramas, rendered panoramas from the constructed 3D representation, and multiple novel-view renderings.
+      </p>
+    </div>
+
+    <figure class="image is-centered full-figure result-block">
+      <img src="./media/figure4.png" alt="Main 3D scene comparison">
+    </figure>
+    <p class="figure-caption">
+      <strong>Main 3D scene comparison.</strong> Compared with baselines, SphereScene produces more coherent panoramas and more stable novel-view renderings.</p>
+
+    <div class="metrics-table table-container">
+      <table class="table is-fullwidth is-striped is-hoverable is-bordered is-narrow black-table">
+        <thead>
+          <tr>
+            <th rowspan="2">Method</th>
+            <th rowspan="2">Aesthetic ↑</th>
+            <th rowspan="2">CLIP-Score ↑</th>
+            <th colspan="2">CLIP-IQA ↑</th>
+            <th rowspan="2">BRISQUE ↓</th>
+            <th rowspan="2">NIQE ↓</th>
+          </tr>
+          <tr>
+            <th>Quality</th>
+            <th>Sharpness</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>LucidDreamer</td><td>4.793</td><td>25.275</td><td>0.206</td><td><strong>0.599</strong></td><td>38.001</td><td>5.734</td></tr>
+          <tr><td>DreamScene360</td><td><u>5.000</u></td><td>28.602</td><td>0.540</td><td>0.258</td><td>29.722</td><td>5.171</td></tr>
+          <tr><td>LayerPano3D</td><td>4.988</td><td><u>34.387</u></td><td><u>0.864</u></td><td>0.183</td><td><u>23.996</u></td><td><u>4.582</u></td></tr>
+          <tr><td><strong>SphereScene (Ours)</strong></td><td><strong>5.236</strong></td><td><strong>38.714</strong></td><td><strong>0.880</strong></td><td><u>0.579</u></td><td><strong>19.699</strong></td><td><strong>3.270</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">
+      <strong>Quantitative 3D rendering results.</strong> Rendered views from generated 3D scenes show that SphereScene improves semantic alignment and no-reference perceptual quality over representative baselines.
+    </p>
+
+    <div class="subfigure-grid result-block">
+      <div class="subfigure-card">
+        <img src="./media/figure7.png" alt="Outdoor results by our method">
+        <p class="caption"><strong>Outdoor scenes.</strong> Generated panoramas, rendered panoramas, and multi-view renderings produced by our method.</p>
+      </div>
+      <div class="subfigure-card">
+        <img src="./media/figure8.png" alt="Indoor results by our method">
+        <p class="caption"><strong>Indoor scenes.</strong> Additional indoor generated scenes with stable appearance and geometry.</p>
+      </div>
+    </div>
+
+    <figure class="image is-centered full-figure result-block">
+      <img src="./media/figure9.png" alt="Additional 3D comparison">
+    </figure>
+    <p class="figure-caption">
+      <strong>Additional 3D comparison.</strong> We compare Ours, LucidDreamer, DreamScene360, and LayerPano3D on representative outdoor and indoor scenes. SphereScene better preserves scene closure and structural consistency.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Ablation Study</h2>
+    <div class="section-note has-text-justified">
+      <p>
+        We visualize the effects of removing each major component. The ablation variants are compared with the corresponding full model under the same prompt and viewpoint.
+      </p>
+    </div>
+    <figure class="image is-centered full-figure result-block">
+      <img src="./media/figure10.png" alt="Ablation visualization">
+    </figure>
+    <p class="figure-caption">
+      <strong>Visual ablation.</strong> Removing spherical regularization, uncertainty-aware depth aggregation, or solid-angle-aware Gaussian initialization leads to visible degradation in panorama coherence or 3D rendering stability.</p>
+
+    <div class="metrics-table table-container">
+      <table class="table is-fullwidth is-striped is-hoverable is-bordered is-narrow black-table">
+        <thead>
+          <tr>
+            <th rowspan="2">Variant</th>
+            <th rowspan="2">Aesthetic ↑</th>
+            <th rowspan="2">CLIP-Score ↑</th>
+            <th colspan="2">CLIP-IQA ↑</th>
+            <th rowspan="2">BRISQUE ↓</th>
+            <th rowspan="2">NIQE ↓</th>
+          </tr>
+          <tr>
+            <th>Quality</th>
+            <th>Sharpness</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>w/o Spherical Regularization</td><td>4.125</td><td>22.087</td><td>0.206</td><td>0.257</td><td>36.375</td><td>5.535</td></tr>
+          <tr><td>w/o Uncertainty-aware Depth</td><td>5.051</td><td>34.420</td><td>0.824</td><td>0.489</td><td>26.500</td><td>4.074</td></tr>
+          <tr><td>w/o Solid-angle Gaussian Init.</td><td>4.793</td><td>34.688</td><td>0.802</td><td>0.525</td><td>24.147</td><td>3.833</td></tr>
+          <tr><td><strong>Full Model</strong></td><td><strong>5.236</strong></td><td><strong>38.714</strong></td><td><strong>0.880</strong></td><td><strong>0.579</strong></td><td><strong>19.699</strong></td><td><strong>3.270</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">
+      <strong>Quantitative ablation results.</strong> Each component contributes to the final scene quality, and the full model achieves the best performance across all reported metrics.
+    </p>
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Interactive Panorama Browsing</h2>
+    <div class="section-note has-text-justified">
+      <p>
+        Drag each panorama horizontally to inspect the wrap-around continuity. The panels use the original 2:1 equirectangular panoramas and repeat them along the horizontal direction for continuous browsing.
+      </p>
+    </div>
+
+    <div class="pano-grid">
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano1.png"></div>
+        <p>Panorama Example 1</p>
+      </div>
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano2.png"></div>
+        <p>Panorama Example 2</p>
+      </div>
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano3.png"></div>
+        <p>Panorama Example 3</p>
+      </div>
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano4.png"></div>
+        <p>Panorama Example 4</p>
+      </div>
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano5.png"></div>
+        <p>Panorama Example 5</p>
+      </div>
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano6.png"></div>
+        <p>Panorama Example 6</p>
+      </div>
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano7.png"></div>
+        <p>Panorama Example 7</p>
+      </div>
+      <div class="pano-card">
+        <div class="pano-window" data-img="./media/pano8.png"></div>
+        <p>Panorama Example 8</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 1.5rem;">
+  <div class="container is-max-desktop">
+    <div class="content has-text-centered footer-note">
+      <p>
+        Anonymous project page for NeurIPS 2026 review only.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  function setupPanoramaWindows() {
+    document.querySelectorAll('.pano-window').forEach(function(el) {
+      const img = el.getAttribute('data-img');
+      el.style.backgroundImage = `url("${img}")`;
+
+      let dragging = false;
+      let startX = 0;
+      let startPos = 0;
+      let pos = 0;
+      let lastTime = performance.now();
+
+      function setPosition(x) {
+        pos = x;
+        el.style.backgroundPosition = `${pos}px center`;
+      }
+
+      function pointerX(evt) {
+        if (evt.touches && evt.touches.length) return evt.touches[0].clientX;
+        return evt.clientX;
+      }
+
+      el.addEventListener('mousedown', function(evt) {
+        dragging = true;
+        el.classList.add('is-dragging');
+        startX = pointerX(evt);
+        startPos = pos;
+        evt.preventDefault();
+      });
+
+      window.addEventListener('mousemove', function(evt) {
+        if (!dragging) return;
+        setPosition(startPos + pointerX(evt) - startX);
+      });
+
+      window.addEventListener('mouseup', function() {
+        dragging = false;
+        el.classList.remove('is-dragging');
+      });
+
+      el.addEventListener('touchstart', function(evt) {
+        dragging = true;
+        el.classList.add('is-dragging');
+        startX = pointerX(evt);
+        startPos = pos;
+      }, {passive: true});
+
+      window.addEventListener('touchmove', function(evt) {
+        if (!dragging) return;
+        setPosition(startPos + pointerX(evt) - startX);
+      }, {passive: true});
+
+      window.addEventListener('touchend', function() {
+        dragging = false;
+        el.classList.remove('is-dragging');
+      });
+
+      function animate(now) {
+        const dt = now - lastTime;
+        lastTime = now;
+        if (!dragging && !el.matches(':hover')) {
+          setPosition(pos - 0.018 * dt);
+        }
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', setupPanoramaWindows);
+</script>
+
+</body>
+</html>
