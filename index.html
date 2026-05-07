@@ -182,6 +182,19 @@
       text-align: left;
     }
 
+
+    .video-wrapper {
+      margin-top: 1.1rem;
+    }
+
+    .demo-video {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #e8e8e8;
+      background: #000;
+      display: block;
+    }
+
     .footer-note {
       font-size: 0.95rem;
       color: #111;
@@ -238,6 +251,21 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="section compact-section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Demo Video</h2>
+    <div class="video-wrapper">
+      <video class="demo-video" controls muted playsinline preload="metadata" poster="./media/figure1.png">
+        <source src="./media/demo.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <p class="figure-caption">
+      <strong>Video demonstration.</strong> The demo summarizes panorama generation, 3D scene construction, and representative rendered views produced by SphereScene.
+    </p>
   </div>
 </section>
 
@@ -428,35 +456,35 @@
     <div class="pano-grid">
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano1.png"></div>
-        <p>Panorama Example 1</p>
+        <p>A panoramic view of a modern bedroom with a large bed and warm ambient lighting.</p>
       </div>
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano2.png"></div>
-        <p>Panorama Example 2</p>
+        <p>A panoramic view captures a quiet residential street lined with small houses, parked cars.</p>
       </div>
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano3.png"></div>
-        <p>Panorama Example 3</p>
+        <p>A photorealistic view of a modern living room with a sofa and warm indoor lighting.</p>
       </div>
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano4.png"></div>
-        <p>Panorama Example 4</p>
+        <p>A panoramic urban street with buildings, sidewalks, parked cars, and cloudy daylight.</p>
       </div>
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano5.png"></div>
-        <p>Panorama Example 5</p>
+        <p>A panoramic view captures a compact studio apartment with a bed and a clean modern layout.</p>
       </div>
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano6.png"></div>
-        <p>Panorama Example 6</p>
+        <p>A panoramic forest trail surrounded by tall trees and dense green vegetation.</p>
       </div>
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano7.png"></div>
-        <p>Panorama Example 7</p>
+        <p>A panoramic view captures a stylish living room with a fireplace, a comfortable sofa set.</p>
       </div>
       <div class="pano-card">
         <div class="pano-window" data-img="./media/pano8.png"></div>
-        <p>Panorama Example 8</p>
+        <p>A panoramic view captures a wide, overcast outdoor scene featuring a paved intersection near a campus area with trees.</p>
       </div>
     </div>
   </div>
